@@ -26,8 +26,8 @@ def QLearning(Env, Epizodes):
             else:
                 action = random.randint(0, 3)
             new_state, reward = Env.step(action)
-            Q[state, action] = Q[state, action] + alpha * (reward + gamma * np.max(Q[new_state, :]) - Q[state, action])
-            # Q[state, action] = (1 - alpha) * Q[state, action] + alpha * (reward + gamma * np.max(Q[new_state, :]))
+            # Q[state, action] = Q[state, action] + alpha * (reward + gamma * np.max(Q[new_state, :]) - Q[state, action])
+            Q[state, action] = (1 - alpha) * Q[state, action] + alpha * (reward + gamma * np.max(Q[new_state, :]))
             total_epizode_rewards += reward
             state = new_state
         Env.stopSumo()
