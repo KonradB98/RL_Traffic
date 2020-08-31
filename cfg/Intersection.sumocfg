@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- generated on 08/27/20 22:05:55 by Eclipse SUMO GUI Version 1.6.0
+-->
+
+<configuration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/sumoConfiguration.xsd">
+
+    <input>
+        <net-file value="C:\Users\Konrad\Desktop\Materialy_studia\Inz_Materialy\RL_Traffic\cfg\Intersection.net.xml"/>
+        <route-files value="C:\Users\Konrad\Desktop\Materialy_studia\Inz_Materialy\RL_Traffic\cfg\Intersection.rou.xml"/>
+        <additional-files value="C:\Users\Konrad\Desktop\Materialy_studia\Inz_Materialy\RL_Traffic\cfg\Intersection.add.xml"/>
+    </input>
+    <tls.actuated.show-detectors value="true"/>
+
+</configuration>

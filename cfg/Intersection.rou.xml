@@ -1,0 +1,57 @@
+<routes>
+                <vType accel="2.6" decel="4.5" id="Car" length="4.0" maxSpeed="70.0" sigma="0.4" guiShape="passenger" />
+                <route id="right" edges="W_0 0_E" />
+                <route id="left" edges="E_0 0_W" />
+                <route id="down" edges="N_0 0_S" />
+                <route id="up" edges="S_0 0_N" />
+    <vehicle id="right_0" type="Car" route="right" depart="0" />
+    <vehicle id="right_1" type="Car" route="right" depart="1" />
+    <vehicle id="right_2" type="Car" route="right" depart="2" />
+    <vehicle id="right_3" type="Car" route="right" depart="3" />
+    <vehicle id="right_4" type="Car" route="right" depart="4" />
+    <vehicle id="right_5" type="Car" route="right" depart="5" />
+    <vehicle id="right_6" type="Car" route="right" depart="6" />
+    <vehicle id="right_7" type="Car" route="right" depart="7" />
+    <vehicle id="right_8" type="Car" route="right" depart="8" />
+    <vehicle id="right_9" type="Car" route="right" depart="9" />
+    <vehicle id="right_10" type="Car" route="right" depart="10" />
+    <vehicle id="right_11" type="Car" route="right" depart="11" />
+    <vehicle id="right_12" type="Car" route="right" depart="12" />
+    <vehicle id="right_13" type="Car" route="right" depart="13" />
+    <vehicle id="right_14" type="Car" route="right" depart="14" />
+    <vehicle id="right_15" type="Car" route="right" depart="15" />
+    <vehicle id="right_16" type="Car" route="right" depart="16" />
+    <vehicle id="right_17" type="Car" route="right" depart="17" />
+    <vehicle id="right_18" type="Car" route="right" depart="18" />
+    <vehicle id="right_19" type="Car" route="right" depart="19" />
+    <vehicle id="right_20" type="Car" route="right" depart="20" />
+    <vehicle id="right_21" type="Car" route="right" depart="21" />
+    <vehicle id="right_22" type="Car" route="right" depart="22" />
+    <vehicle id="right_23" type="Car" route="right" depart="23" />
+    <vehicle id="right_24" type="Car" route="right" depart="24" />
+    <vehicle id="right_25" type="Car" route="right" depart="25" />
+    <vehicle id="right_26" type="Car" route="right" depart="26" />
+    <vehicle id="right_27" type="Car" route="right" depart="27" />
+    <vehicle id="right_28" type="Car" route="right" depart="28" />
+    <vehicle id="right_29" type="Car" route="right" depart="29" />
+    <vehicle id="right_30" type="Car" route="right" depart="30" />
+    <vehicle id="right_31" type="Car" route="right" depart="31" />
+    <vehicle id="right_32" type="Car" route="right" depart="32" />
+    <vehicle id="right_33" type="Car" route="right" depart="33" />
+    <vehicle id="right_34" type="Car" route="right" depart="34" />
+    <vehicle id="right_35" type="Car" route="right" depart="35" />
+    <vehicle id="right_36" type="Car" route="right" depart="36" />
+    <vehicle id="right_37" type="Car" route="right" depart="37" />
+    <vehicle id="right_38" type="Car" route="right" depart="38" />
+    <vehicle id="right_39" type="Car" route="right" depart="39" />
+    <vehicle id="right_40" type="Car" route="right" depart="40" />
+    <vehicle id="right_41" type="Car" route="right" depart="41" />
+    <vehicle id="right_42" type="Car" route="right" depart="42" />
+    <vehicle id="right_43" type="Car" route="right" depart="43" />
+    <vehicle id="right_44" type="Car" route="right" depart="44" />
+    <vehicle id="right_45" type="Car" route="right" depart="45" />
+    <vehicle id="right_46" type="Car" route="right" depart="46" />
+    <vehicle id="right_47" type="Car" route="right" depart="47" />
+    <vehicle id="right_48" type="Car" route="right" depart="48" />
+    <vehicle id="right_49" type="Car" route="right" depart="49" />
+</routes>
