@@ -6,6 +6,7 @@ import random
 from sumolib import checkBinary
 import traci
 import numpy as np
+import time
 
 if 'SUMO_HOME' in os.environ:
     tools = os.path.join(os.environ['SUMO_HOME'], 'tools')
@@ -18,7 +19,6 @@ class TrafficEnv: #Class define structure od SUMO enviroment
     def __init__(self):
         self.detector = "detectors" #multi entry/exit detectors id
         self.lights = [TwoWayIntersection(id="0")] #List of Lihts(intersections) -- now 1
-        self.sim_delay = 10 #time between simulations (episodes)
         self.sim_end = 100 #simulation end time
         self.obs_space = ["mloop{}".format(i) for i in range(8)] #induction loops detectors id's
         self.run_flag = False #running simulation flag -> if True - simulation is running
@@ -27,6 +27,8 @@ class TrafficEnv: #Class define structure od SUMO enviroment
         self.roufile = os.path.join(self.file_path, "Intersection.rou.xml") #Name of routes file
         self.cfgfile = os.path.join(self.file_path, "Intersection.sumocfg") #Name of configuration file
         self.infofile = os.path.join(self.file_path, "tripinfo.xml") #name of SUMO output file
+        self.act_space = [a.actions for a in self.lights]
+        self.delay = 1
 
     def generateRoutes(self): #method generate routes, write to file "Intersection.rou.xml"
         random.seed(1)  # make tests reproducible
@@ -101,17 +103,17 @@ class TrafficEnv: #Class define structure od SUMO enviroment
 
     def getReward(self, o1):
         # return s1 * s2
-        if o1 > 8:
-            return -100
+        if o1 > 6:
+            return -10
         else:
             return 1
 
     def observation(self):
-        # xd = traci.vehicle.get
         veh_amount = traci.multientryexit.getLastStepVehicleNumber(self.detector)
         # veh_speed = traci.multientryexit.getLastStepMeanSpeed(self.detector)
         light_state = [lgt.state for lgt in self.lights]
         return veh_amount, light_state
+
 
     def getEnvState(self):
         state = []
@@ -127,24 +129,33 @@ class TrafficEnv: #Class define structure od SUMO enviroment
         return state_mtrx, light_state
 
     def step(self, action):
-        s = self.sim_step
         self.sim_step += 1 #increase simulation step
+
+        # for act, lgt in zip(action, self.lights): #set light (for loop if in the future will be more intersections)
+        #     signal = lgt.setLight(act)
+        #     traci.trafficlight.setPhase(lgt.intersection_id, signal)
+
         for lgt in self.lights: #set light (for loop if in the future will be more intersections)
             signal = lgt.setLight(action)
             traci.trafficlight.setPhase(lgt.intersection_id, signal)
-        # s, l = self.getEnvState()
-        o1, l = self.observation()
-        # print(q)
-        r = self.getReward(o1)
         traci.simulationStep()
-        # end = self.sim_step > self.sim_end
-        # # s = self.sim_step
-        # if end:
-        #     self.stopSumo()
-        return o1, r
+        o1, l = self.observation()
+        r = self.getReward(o1)
+        end = self.sim_step > self.sim_end
+        if end:
+            self.stopSumo()
+        return o1, r, end
 
     def getLightActions(self):
         actions = []
         for act in self.lights:
             actions = act.getActions()
         return actions
+
+    def reset(self):
+        self.stopSumo()
+        if self.delay > 0:
+            time.sleep(self.delay/100.0)
+        self.startSumo()
+        obs, l = self.observation()
+        return obs
