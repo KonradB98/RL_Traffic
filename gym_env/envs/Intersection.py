@@ -24,7 +24,9 @@ class Intersection:
 #Subclass that defines simple, two way intersection
 class TwoWayIntersection(Intersection):
     def __init__(self, id):
-        self.duration = 2 #Duration time
+        self.duration = 1 #Duration time
+        # self.det_name = "detector" + id + "_"
+        self.dets = ["detector" + id + "_{}".format(i) for i in range(4)]
         super(TwoWayIntersection, self).__init__(id=id, actions=[0, 1, 2, 3])
 
     def available_actions(self, action):

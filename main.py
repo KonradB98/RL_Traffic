@@ -1,62 +1,23 @@
 import random
 import numpy as np
-from Enviroment import TrafficEnv
 import matplotlib.pyplot as plt
+import gym
+import gym_env
 
 
-def QLearning(Env, Epizodes):
-    actions = len(Env.getLightActions()) #Number of available actions (4 for Two way intersection)
-    print(actions)
-    # actions = len(Env.act_space)
-    states = Env.sim_end #Number of simulation states
-    Q = np.zeros((states, actions)) #Initialize Q table with zeros
-
-    alpha = 0.1 #Learning rate
-    gamma = 0.99 #Discount rate
-    epsilon = 1.0
-    max_ep = 1.0
-    min_ep = 0.01
-    exploration_decay_rate = 0.01
-
-    #For charts
-    epzds = []
-
-    cumulative_rewards = []
+def run(Env, Epizodes):
     for episode in range(Epizodes):
-        state = Env.reset()
-        total_epizode_rewards = 0
+        Env.reset()
         for step in range(Env.sim_end):
-            exp_exp_tradeoff = random.uniform(0, 1)
-            if exp_exp_tradeoff > epsilon:
-                action = np.argmax(Q[state, :])
-            else:
-                action = random.randint(0, 3)
-            new_state, reward, done = Env.step(action)
-            # Q[state, action] = Q[state, action] + alpha * (reward + gamma * np.max(Q[new_state, :]) - Q[state, action])
-            Q[state, action] = (1 - alpha) * Q[state, action] + alpha * (reward + gamma * np.max(Q[new_state, :]))
-            total_epizode_rewards += reward
-            state = new_state
+            action = [0, 0]
+            new_states, rewards, done, info = Env.step(action)
+            # print(new_states)
             if done:
                 break
-        epsilon = min_ep + (max_ep - min_ep) * np.exp(-exploration_decay_rate * episode)
-        cumulative_rewards.append(total_epizode_rewards)
-        epzds.append(episode)
 
-    # print(cumulative_rewards)
-    return cumulative_rewards, epzds
-
-def QAgents(Env, Epizodes):
-    # actions = len(Env.getLightActions()) #Number of available actions (4 for Two way intersection)
-    states = Env.sim_end #Number of simulation states
-    Q_list = []
-    for actions in Env.act_space:
-        actions = len(actions)
-        Q = np.zeros((states, actions))  # Initialize Q table with zeros
-        Q_list.append(Q)
-    # print(Q_list)
-
+def Multi_Agents_Q_Learning(env, epizodes):
     #Hyperparameters
-    alpha = 0.1 #Learning rate
+    alpha = 0.9 #Learning rate
     gamma = 0.99 #Discount rate
     epsilon = 1.0
     max_ep = 1.0
@@ -65,53 +26,56 @@ def QAgents(Env, Epizodes):
 
     #For charts
     epzds = []
-    a = []
-
     cumulative_rewards = []
-    for episode in range(Epizodes):
-        state = Env.reset()
+
+    # Define Q table list
+    Q = []
+    for act, obs in zip(env.action_space, env.observation_space):
+        action_n = act.n
+        num_box = tuple((obs.high + np.ones(obs.shape)).astype(int))
+        q_table = np.zeros(num_box + (action_n,))
+        Q.append(q_table)
+
+    for episode in range(epizodes):
+        states = env.reset()
         total_epizode_rewards = 0
-        for step in range(Env.sim_end):
-            for Q in Q_list:
+        for step in range(env.sim_end):
+            action_n = []
+            for q_table, state, act in zip(Q, states, env.action_space):
                 exp_exp_tradeoff = random.uniform(0, 1)
                 if exp_exp_tradeoff > epsilon:
-                    action = np.argmax(Q[state, :])
-                    a.append(action)
+                    action = np.argmax(q_table[state])
+                    action_n.append(action)
                 else:
-                    action = random.randint(0, 3)
-                    a.append(action)
-            new_state, reward, done = Env.stepik(a)
-            for Q, action in zip(Q_list, a):
+                    action = act.sample()
+                    action_n.append(action)
+
+            new_states, rewards, done, _ = env.step(action_n)
+            for q_table, state, action, reward, new_state in zip(Q, states, action_n, rewards, new_states):
+                q_table[state][action] = q_table[state][action] + alpha * (reward + gamma * np.max(q_table[new_state]) - q_table[state][action])
                 # Q[state, action] = Q[state, action] + alpha * (reward + gamma * np.max(Q[new_state, :]) - Q[state, action])
-                Q[state, action] = (1 - alpha) * Q[state, action] + alpha * (reward + gamma * np.max(Q[new_state, :]))
-            total_epizode_rewards += reward
-            state = new_state
-            a.clear()
+            total_epizode_rewards += sum(rewards)
+            states = new_states
             if done:
                 break
         epsilon = min_ep + (max_ep - min_ep) * np.exp(-exploration_decay_rate * episode)
         cumulative_rewards.append(total_epizode_rewards)
         epzds.append(episode)
-
-    # # print(cumulative_rewards)
     return cumulative_rewards, epzds
-
 
 
 if __name__ == "__main__":
+
     epizodes = []
     rewards_sum = []
-    env = TrafficEnv()
-    n_epizodes = 10
+    env = gym.make("RL_Traffic-v0")
+    n_epizodes = 1000
+
+
     #------------Modified Algorithm-------------#
-    rewards_sum, epizodes = QAgents(env, n_epizodes)
+    rewards_sum, epizodes = Multi_Agents_Q_Learning(env, n_epizodes)
     plt.plot(epizodes, rewards_sum)
     plt.show()
-
-    # ------------Goood One-------------#
-    # rewards_sum, epizodes = QLearning(env, n_epizodes)
-    # plt.plot(epizodes, rewards_sum)
-    # plt.show()
 
 
 

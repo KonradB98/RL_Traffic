@@ -1,7 +1,7 @@
 <routes>
                 <vType accel="2.6" decel="4.5" id="Car" length="4.0" maxSpeed="70.0" sigma="0.4" guiShape="passenger" />
-                <route id="right" edges="W_0 0_E" />
-                <route id="left" edges="E_0 0_W" />
+                <route id="right" edges="W_0 0_1 1_E2" />
+                <route id="left" edges="E2_1 1_0 0_W" />
                 <route id="down" edges="N_0 0_S" />
                 <route id="up" edges="S_0 0_N" />
     <vehicle id="right_0" type="Car" route="right" depart="0" />
