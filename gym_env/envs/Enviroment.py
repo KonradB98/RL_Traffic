@@ -24,7 +24,7 @@ class TrafficEnv(gym.Env): #Class define structure od SUMO enviroment
     }
 
     def __init__(self): #Constructor
-        self.sim_end = 100 #simulation end time
+        self.sim_end = 300 #simulation end time
         self.run_flag = False #running simulation flag -> if True - simulation is running
         self.sim_step = 0 #represents each step of simulation
         self.delay = 1 #Delay between epizodes
@@ -37,7 +37,7 @@ class TrafficEnv(gym.Env): #Class define structure od SUMO enviroment
         for agent in self.agents:
             self.action_space.append(spaces.Discrete(len(agent.actions)))
             light_space = spaces.Discrete(len(agent.actions))
-            obs_space = spaces.Box(np.array([0 for i in range(len(agent.dets))]), np.array([8 for i in range(len(agent.dets))]), dtype=np.int)
+            obs_space = spaces.Box(np.array([0 for i in range(len(agent.dets))]), np.array([9 for i in range(len(agent.dets))]), dtype=np.int)
             # self.observation_space.append(spaces.Box(np.array([0 for i in range(len(agent.dets))]), np.array([8 for i in range(len(agent.dets))]), dtype=np.int))
             all_obs = spaces.Tuple((obs_space, light_space))
             self.observation_space.append(obs_space)
@@ -48,48 +48,15 @@ class TrafficEnv(gym.Env): #Class define structure od SUMO enviroment
         self.roufile = os.path.join(self.file_path, "Intersection.rou.xml")  # Name of routes file
         self.cfgfile = os.path.join(self.file_path, "Intersection.sumocfg")  # Name of configuration file
         self.infofile = os.path.join(self.file_path, "tripinfo.xml")  # name of SUMO output file
+        self.netfile = os.path.join(self.file_path, "Intersection.net.xml")
+        self.addfile = os.path.join(self.file_path, "Intersection.add.xml")
+        self.timer = 3
+        self.logfile = os.path.join(self.file_path, "Intersection.add.xml")
 
+        # binary = "sumo-gui"
+        # args += ["-S", "-Q", "--gui-settings-file", guifile]
+        # self.sumo_cmd = [binary] + args
 
-
-
-    def generateRoutes(self): #method generate routes (different scenarios), write to file "Intersection.rou.xml"
-        random.seed(1)  # make tests reproducible
-        N = 50  # number of vehicles
-        pWE = 1. / 5
-        pEW = 1. / 10
-        pNS = 1. / 15
-        pSN = 1. / 20
-        with open(self.roufile, "w") as routes:
-            print("""<routes>
-                <vType accel="2.6" decel="4.5" id="Car" length="4.0" maxSpeed="70.0" sigma="0.4" guiShape="passenger" />
-                <route id="right" edges="W_0 0_1 1_E2" />
-                <route id="left" edges="E2_1 1_0 0_W" />
-                <route id="down" edges="N_0 0_S" />
-                <route id="up" edges="S_0 0_N" />""", file=routes)
-            vehNr = 0
-            # First scenario - 10 cars from West to East
-            for i in range(N):
-                print('    <vehicle id="right_%i" type="Car" route="right" depart="%i" />' % (
-                    vehNr, i), file=routes)
-                vehNr += 1
-            # for i in range(N):
-            #     if random.uniform(0, 1) < pWE:
-            #         print('    <vehicle id="right_%i" type="Car" route="right" depart="%i" />' % (
-            #             vehNr, i), file=routes)
-            #         vehNr += 1
-            #     if random.uniform(0, 1) < pEW:
-            #         print('    <vehicle id="left_%i" type="Car" route="left" depart="%i" />' % (
-            #             vehNr, i), file=routes)
-            #         vehNr += 1
-            #     if random.uniform(0, 1) < pNS:
-            #         print('    <vehicle id="down_%i" type="Car" route="down" depart="%i" />' % (
-            #             vehNr, i), file=routes)
-            #         vehNr += 1
-            #     if random.uniform(0, 1) < pSN:
-            #         print('    <vehicle id="up_%i" type="Car" route="up" depart="%i" />' % (
-            #             vehNr, i), file=routes)
-            #         vehNr += 1
-            print("</routes>", file=routes)
 
     # def generateRoutes(self): #method generate routes (different scenarios), write to file "Intersection.rou.xml"
     #     random.seed(1)  # make tests reproducible
@@ -144,9 +111,13 @@ class TrafficEnv(gym.Env): #Class define structure od SUMO enviroment
             else:
                 sumoBinary = checkBinary('sumo-gui')
             # Generate route file
-            self.generateRoutes()
-            # Start SUMO as subprocess, connect python script and run
-            traci.start([sumoBinary, "-c", self.cfgfile, "--tripinfo-output", self.infofile])
+            # self.generateRoutes()
+            # self.simple_scenario()
+            # self.equal_intensity_scenario()
+            # self.one_two_three_four_scenario()
+            # self.three_three_three_one_scenario()
+            self.mm_scenario()
+            traci.start([sumoBinary, "--quit-on-end", "-c", self.cfgfile, "--tripinfo-output", self.infofile])
             self.sim_step = 0
             self.run_flag = True
         else:
@@ -188,10 +159,19 @@ class TrafficEnv(gym.Env): #Class define structure od SUMO enviroment
             observation_n.append(self.get_observation(agent))
             reward_n.append(self.get_reward(agent))
             # reward_n.append(self.rew())
-        end = self.sim_step >= self.sim_end
-        if end:
+        # if self.sim_step >= self.sim_end:
+        #     print(self.sim_step, self.sim_end)
+        #     done = True
+        # else:
+        #     done = False
+        #     print(self.sim_step, done)
+        # print(self.sim_end)
+        # end = self.sim_step >= self.sim_end
+        # print(self.sim_step)
+        done = traci.simulation.getMinExpectedNumber() <= 0
+        if done:
             self.stopSumo()
-        return observation_n, reward_n, end, {}
+        return observation_n, reward_n, done, {}
 
     def reset(self): #Method define steps to reset simulation
         observation_n = []
@@ -212,5 +192,202 @@ class TrafficEnv(gym.Env): #Class define structure od SUMO enviroment
         c = traci.multientryexit.getLastStepVehicleNumber(self.multi_det)
         r = max(s * c, 0)
         return r
+
+    # -----------------------------------------------------------------------#
+    # -----------------------------Scenarios---------------------------------#
+    # -----------------------------------------------------------------------#
+
+    def simple_scenario(self):
+        random.seed(1)  # make tests reproducible
+        N = 50  # number of vehicles
+        with open(self.roufile, "w") as routes:
+            print("""<routes>
+                        <vType accel="2.6" decel="4.5" id="Car" length="4.0" maxSpeed="70.0" sigma="0.4" guiShape="passenger" />
+                        <route id="right" edges="W_0 0_1 1_E2" />
+                        <route id="left" edges="E2_1 1_0 0_W" />
+                        <route id="down" edges="N_0 0_S" />
+                        <route id="up" edges="S_0 0_N" />
+                        <route id="down2" edges="N2_1 1_S2" />
+                        <route id="up2" edges="S2_1 1_N2" />""", file=routes)
+            vehNr = 0
+            # First scenario - N cars from West to East
+            for i in range(N):
+                print('    <vehicle id="right_%i" type="Car" route="right" depart="%i" />' % (
+                    vehNr, i), file=routes)
+                vehNr += 1
+            print("</routes>", file=routes)
+
+    def equal_intensity_scenario(self):
+        random.seed(1)  # make tests reproducible
+        N = 300  # number of vehicles
+        pWE = 1. / 6
+        pEW = 1. / 6
+        pNS = 1. / 6
+        pSN = 1. / 6
+        pNS2 = 1. / 6
+        pSN2 = 1. / 6
+        with open(self.roufile, "w") as routes:
+            print("""<routes>
+                        <vType accel="2.6" decel="4.5" id="Car" length="4.0" maxSpeed="70.0" sigma="0.4" guiShape="passenger" />
+                        <route id="right" edges="W_0 0_1 1_E2" />
+                        <route id="left" edges="E2_1 1_0 0_W" />
+                        <route id="down" edges="N_0 0_S" />
+                        <route id="up" edges="S_0 0_N" />
+                        <route id="down2" edges="N2_1 1_S2" />
+                        <route id="up2" edges="S2_1 1_N2" />""", file=routes)
+            vehNr = 0
+            for i in range(N):
+                if random.uniform(0, 1) < pWE:
+                    print('    <vehicle id="right_%i" type="Car" route="right" depart="%i" />' % (
+                        vehNr, i), file=routes)
+                    vehNr += 1
+                if random.uniform(0, 1) < pEW:
+                    print('    <vehicle id="left_%i" type="Car" route="left" depart="%i" />' % (
+                        vehNr, i), file=routes)
+                    vehNr += 1
+                if random.uniform(0, 1) < pNS:
+                    print('    <vehicle id="down_%i" type="Car" route="down" depart="%i" />' % (
+                        vehNr, i), file=routes)
+                    vehNr += 1
+                if random.uniform(0, 1) < pSN:
+                    print('    <vehicle id="up_%i" type="Car" route="up" depart="%i" />' % (
+                        vehNr, i), file=routes)
+                    vehNr += 1
+                if random.uniform(0, 1) < pNS2:
+                    print('    <vehicle id="down2_%i" type="Car" route="down2" depart="%i" />' % (
+                        vehNr, i), file=routes)
+                    vehNr += 1
+                if random.uniform(0, 1) < pSN2:
+                    print('    <vehicle id="up2_%i" type="Car" route="up2" depart="%i" />' % (
+                        vehNr, i), file=routes)
+                    vehNr += 1
+            print("</routes>", file=routes)
+
+    def one_two_three_four_scenario(self):
+        random.seed(1)  # make tests reproducible
+        N = 800  # number of vehicles
+        pWE = 1. / 16
+        pEW = 3. / 16
+        pNS = 1. / 2
+        pSN = 1. / 4
+        with open(self.roufile, "w") as routes:
+            print("""<routes>
+                                <vType accel="2.6" decel="4.5" id="Car" length="4.0" maxSpeed="70.0" sigma="0.4" guiShape="passenger" />
+                                <route id="right" edges="W_0 0_1 1_E2" />
+                                <route id="left" edges="E2_1 1_0 0_W" />
+                                <route id="down" edges="N_0 0_S" />
+                                <route id="up" edges="S_0 0_N" />
+                                <route id="down2" edges="N2_1 1_S2" />
+                                <route id="up2" edges="S2_1 1_N2" />""", file=routes)
+            vehNr = 0
+            for i in range(N):
+                if random.uniform(0, 1) < pWE:
+                    print('    <vehicle id="right_%i" type="Car" route="right" depart="%i" />' % (
+                        vehNr, i), file=routes)
+                    vehNr += 1
+                if random.uniform(0, 1) < pEW:
+                    print('    <vehicle id="left_%i" type="Car" route="left" depart="%i" />' % (
+                        vehNr, i), file=routes)
+                    vehNr += 1
+                if random.uniform(0, 1) < pNS:
+                    print('    <vehicle id="down_%i" type="Car" route="down" depart="%i" /> ' % (
+                        vehNr, i), file=routes)
+                    vehNr += 1
+                if random.uniform(0, 1) < pSN:
+                    print('    <vehicle id="up_%i" type="Car" route="up" depart="%i" />' % (
+                        vehNr, i), file=routes)
+                    vehNr += 1
+                if random.uniform(0, 1) < pNS:
+                    print('    <vehicle id="down_%i" type="Car" route="down2" depart="%i" />' % (
+                        vehNr, i), file=routes)
+                    vehNr += 1
+                if random.uniform(0, 1) < pSN:
+                    print('    <vehicle id="up_%i" type="Car" route="up2" depart="%i" />' % (
+                        vehNr, i), file=routes)
+                    vehNr += 1
+            print("</routes>", file=routes)
+
+
+
+    def three_three_three_one_scenario(self):
+        random.seed(1)  # make tests reproducible
+        N = 1400  # number of vehicles
+        pWE = 3. / 14
+        pEW = 3. / 14
+        pNS = 1. / 14
+        pSN = 3. / 14
+        with open(self.roufile, "w") as routes:
+            print("""<routes>
+                                <vType accel="2.6" decel="4.5" id="Car" length="4.0" maxSpeed="70.0" sigma="0.4" guiShape="passenger" />
+                                <route id="right" edges="W_0 0_1 1_E2" />
+                                <route id="left" edges="E2_1 1_0 0_W" />
+                                <route id="down" edges="N_0 0_S" />
+                                <route id="up" edges="S_0 0_N" />
+                                <route id="down2" edges="N2_1 1_S2" />
+                                <route id="up2" edges="S2_1 1_N2" />""", file=routes)
+            vehNr = 0
+            for i in range(N):
+                if random.uniform(0, 1) < pWE:
+                    print('    <vehicle id="right_%i" type="Car" route="right" depart="%i" />' % (
+                        vehNr, i), file=routes)
+                    vehNr += 1
+                if random.uniform(0, 1) < pEW:
+                    print('    <vehicle id="left_%i" type="Car" route="left" depart="%i" />' % (
+                        vehNr, i), file=routes)
+                    vehNr += 1
+                if random.uniform(0, 1) < pNS:
+                    print('    <vehicle id="down_%i" type="Car" route="down" depart="%i" /> ' % (
+                        vehNr, i), file=routes)
+                    vehNr += 1
+                if random.uniform(0, 1) < pSN:
+                    print('    <vehicle id="up_%i" type="Car" route="up" depart="%i" />' % (
+                        vehNr, i), file=routes)
+                    vehNr += 1
+                if random.uniform(0, 1) < pNS:
+                    print('    <vehicle id="down_%i" type="Car" route="down2" depart="%i" />' % (
+                        vehNr, i), file=routes)
+                    vehNr += 1
+                if random.uniform(0, 1) < pSN:
+                    print('    <vehicle id="up_%i" type="Car" route="up2" depart="%i" />' % (
+                        vehNr, i), file=routes)
+                    vehNr += 1
+            print("</routes>", file=routes)
+
+    def mm_scenario(self):
+        N = 100
+        # R = [100, 100, 100, 100, 100, 100]
+        with open(self.roufile, "w") as routes:
+            print("""<routes>
+                                <vType accel="2.6" decel="4.5" id="Car" length="4.0" maxSpeed="70.0" sigma="0.4" guiShape="passenger" />
+                                <route id="right" edges="W_0 0_1 1_E2" />
+                                <route id="left" edges="E2_1 1_0 0_W" />
+                                <route id="down" edges="N_0 0_S" />
+                                <route id="up" edges="S_0 0_N" />
+                                <route id="down2" edges="N2_1 1_S2" />
+                                <route id="up2" edges="S2_1 1_N2" />""", file=routes)
+            vehNr = 0
+            for i in range(N):
+                print('    <vehicle id="right_%i" type="Car" route="right" depart="%i" />' % (
+                    vehNr, i), file=routes)
+                vehNr += 1
+                print('    <vehicle id="right_%i" type="Car" route="left" depart="%i" />' % (
+                    vehNr, i), file=routes)
+                vehNr += 1
+                print('    <vehicle id="right_%i" type="Car" route="up" depart="%i" />' % (
+                    vehNr, i), file=routes)
+                vehNr += 1
+                print('    <vehicle id="right_%i" type="Car" route="down" depart="%i" />' % (
+                    vehNr, i), file=routes)
+                vehNr += 1
+                print('    <vehicle id="right_%i" type="Car" route="up2" depart="%i" />' % (
+                    vehNr, i), file=routes)
+                vehNr += 1
+                print('    <vehicle id="right_%i" type="Car" route="down2" depart="%i" />' % (
+                    vehNr, i), file=routes)
+                vehNr += 1
+
+            print("</routes>", file=routes)
+
+
 
 

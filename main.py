@@ -3,6 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import gym
 import gym_env
+import traci
 
 
 def run(Env, Epizodes):
@@ -39,7 +40,8 @@ def Multi_Agents_Q_Learning(env, epizodes):
     for episode in range(epizodes):
         states = env.reset()
         total_epizode_rewards = 0
-        for step in range(env.sim_end):
+        # for step in range(env.sim_end):
+        while traci.simulation.getMinExpectedNumber() > 0:
             action_n = []
             for q_table, state, act in zip(Q, states, env.action_space):
                 exp_exp_tradeoff = random.uniform(0, 1)
@@ -50,12 +52,19 @@ def Multi_Agents_Q_Learning(env, epizodes):
                     action = act.sample()
                     action_n.append(action)
 
+                # if random.uniform(0, 1) < epsilon:
+                #     action = act.sample()
+                #     action_n.append(action)
+                # else:
+                #     action = np.argmax(q_table[state])
+                #     action_n.append(action)
             new_states, rewards, done, _ = env.step(action_n)
             for q_table, state, action, reward, new_state in zip(Q, states, action_n, rewards, new_states):
                 q_table[state][action] = q_table[state][action] + alpha * (reward + gamma * np.max(q_table[new_state]) - q_table[state][action])
                 # Q[state, action] = Q[state, action] + alpha * (reward + gamma * np.max(Q[new_state, :]) - Q[state, action])
             total_epizode_rewards += sum(rewards)
             states = new_states
+            # print(step, done)
             if done:
                 break
         epsilon = min_ep + (max_ep - min_ep) * np.exp(-exploration_decay_rate * episode)
@@ -64,12 +73,14 @@ def Multi_Agents_Q_Learning(env, epizodes):
     return cumulative_rewards, epzds
 
 
+
+
 if __name__ == "__main__":
 
     epizodes = []
     rewards_sum = []
     env = gym.make("RL_Traffic-v0")
-    n_epizodes = 1000
+    n_epizodes = 1
 
 
     #------------Modified Algorithm-------------#
