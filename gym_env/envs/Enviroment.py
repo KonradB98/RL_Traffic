@@ -50,51 +50,8 @@ class TrafficEnv(gym.Env): #Class define structure od SUMO enviroment
         self.infofile = os.path.join(self.file_path, "tripinfo.xml")  # name of SUMO output file
         self.netfile = os.path.join(self.file_path, "Intersection.net.xml")
         self.addfile = os.path.join(self.file_path, "Intersection.add.xml")
-        self.timer = 3
-        self.logfile = os.path.join(self.file_path, "Intersection.add.xml")
-
-        # binary = "sumo-gui"
-        # args += ["-S", "-Q", "--gui-settings-file", guifile]
-        # self.sumo_cmd = [binary] + args
 
 
-    # def generateRoutes(self): #method generate routes (different scenarios), write to file "Intersection.rou.xml"
-    #     random.seed(1)  # make tests reproducible
-    #     N = 50  # number of vehicles
-    #     pWE = 1. / 5
-    #     pEW = 1. / 10
-    #     pNS = 1. / 15
-    #     pSN = 1. / 20
-    #     with open(self.roufile, "w") as routes:
-    #         print("""<routes>
-    #             <vType accel="2.6" decel="4.5" id="Car" length="4.0" maxSpeed="70.0" sigma="0.4" guiShape="passenger" />
-    #             <route id="right" edges="W_0 0_1" />
-    #             <route id="down" edges="N_0 0_S" />
-    #             <route id="up" edges="S_0 0_N" />""", file=routes)
-    #         vehNr = 0
-    #         # First scenario - 10 cars from West to East
-    #         for i in range(N):
-    #             print('    <vehicle id="right_%i" type="Car" route="right" depart="%i" />' % (
-    #                 vehNr, i), file=routes)
-    #             vehNr += 1
-    #         # for i in range(N):
-    #         #     if random.uniform(0, 1) < pWE:
-    #         #         print('    <vehicle id="right_%i" type="Car" route="right" depart="%i" />' % (
-    #         #             vehNr, i), file=routes)
-    #         #         vehNr += 1
-    #         #     if random.uniform(0, 1) < pEW:
-    #         #         print('    <vehicle id="left_%i" type="Car" route="left" depart="%i" />' % (
-    #         #             vehNr, i), file=routes)
-    #         #         vehNr += 1
-    #         #     if random.uniform(0, 1) < pNS:
-    #         #         print('    <vehicle id="down_%i" type="Car" route="down" depart="%i" />' % (
-    #         #             vehNr, i), file=routes)
-    #         #         vehNr += 1
-    #         #     if random.uniform(0, 1) < pSN:
-    #         #         print('    <vehicle id="up_%i" type="Car" route="up" depart="%i" />' % (
-    #         #             vehNr, i), file=routes)
-    #         #         vehNr += 1
-    #         print("</routes>", file=routes)
 
     def getOptions(self): #Method returns simulation options like run with gui or without
         opt_parser = optparse.OptionParser()
