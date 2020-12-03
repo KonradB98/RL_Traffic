@@ -23,20 +23,22 @@ class Intersection:
 
 #Subclass that defines simple, two way intersection
 class TwoWayIntersection(Intersection):
-    def __init__(self, id):
+    def __init__(self, id, lanes = []):
         self.duration = 1 #Duration time
-        # self.det_name = "detector" + id + "_"
         self.dets = ["detector" + id + "_{}".format(i) for i in range(4)]
+        self.induction_loops = ["mloop{}".format(i) for i in range(8)]
+        self.lanes = lanes
         super(TwoWayIntersection, self).__init__(id=id, actions=[0, 1, 2, 3])
 
+
     def available_actions(self, action):
-        if action == 0:
-            return action == 1 or action == 0
-        elif action == 2:
-            return action == 3 or action == 2
-        elif action == 1:
-            return action == 2 or action == 1 and self.step > self.duration
-        elif action == 3:
-            return action == 0 or action == 3 and self.step > self.duration
+        if self.state == 0:
+            return action == 1
+        elif self.state == 2:
+            return action == 3
+        elif self.state == 1:
+            return action == 2 and self.step > self.duration
+        elif self.state == 3:
+            return action == 0 and self.step > self.duration
         else:
             print("ERROR")
